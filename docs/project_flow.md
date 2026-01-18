@@ -1,3 +1,5 @@
+# flow chart
+
 ```mermaid
 flowchart TB
     A["<b>사용자<br/>InBody 결과지 업로드</b>"] --> B{"<b>입력 타입 판별</b>"}
@@ -19,4 +21,25 @@ flowchart TB
     Q --> R["<b>주간 기록 요약</b>"]
     R --> S["<b>LLM 주간 피드백 생성</b>"]
     S --> N
+```
+
+
+# “System Architecture Diagram (High-level)”
+
+```mermaid
+flowchart LR
+    User[User (Web UI)]
+    Server[Backend API Server]
+    OCR[OCR / PDF Parser]
+    Rule[Rule-based Engine]
+    LLM[LLM API]
+    DB[(Database)]
+
+    User --> Server
+    Server --> OCR
+    Server --> Rule
+    Server --> LLM
+    Server --> DB
+    DB --> Server
+    Server --> User
 ```
