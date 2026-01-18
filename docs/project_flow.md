@@ -28,12 +28,12 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    User[User (Web UI)]
-    Server[Backend API Server]
-    OCR[OCR / PDF Parser]
-    Rule[Rule-based Engine]
-    LLM[LLM API]
-    DB[(Database)]
+    User["User - Web UI"]
+    Server["Backend API Server"]
+    OCR["OCR PDF Parser"]
+    Rule["Rule-based Engine"]
+    LLM["LLM API"]
+    DB["Database"]
 
     User --> Server
     Server --> OCR
