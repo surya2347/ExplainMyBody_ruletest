@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 SAMPLE_DIR = Path(__file__).parent / "json"
-sample_path = SAMPLE_DIR / "sample8.json"
+sample_path = SAMPLE_DIR / "sample9.json"
 
 with open(sample_path, "r", encoding="utf-8") as f:
     sample_input = json.load(f)
@@ -89,8 +89,8 @@ output_text = response.content[0].text
 OUTPUT_DIR = Path(__file__).parent / "outputs"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-json_path = OUTPUT_DIR / "sample8_output.json"
-raw_path = OUTPUT_DIR / "sample8_output_raw.txt"
+json_path = OUTPUT_DIR / "sample9_output.json"
+raw_path = OUTPUT_DIR / "sample9_output_raw.txt"
 
 try:
     output_json = json.loads(output_text)
