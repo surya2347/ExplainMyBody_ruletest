@@ -1,75 +1,20 @@
 """
-## 상수, 데이터 클래스 정의 ##
+[데이터 모델 (Data Model)]
 
-================================
-인바디 정보를 분석하기 위한 상수와 데이터 클래스 정의
-
+본 모듈은 체성분 분석 도메인에서 사용되는 데이터 구조(Data Structure)를 정의합니다.
+DTO(Data Transfer Object) 역할을 수행하며, 외부 입력(Dictionary/JSON)과 내부 비즈니스 로직 간의
+데이터 인터페이스를 통일하여 타입 안정성을 보장합니다.
 """
-
-
-# ============================================================================
-# 1. 상수 정의 (Constants)
-# ============================================================================
 
 import math
 
-class BMIThreshold:
-    """BMI 분류 임계값"""
-    UNDERWEIGHT = 18.5
-    NORMAL = 23.0
-    OVERWEIGHT = 24.9
-    OBESE_1 = 29.9
-    OBESE_2 = 34.9
-
-
-class BodyFatThreshold:
-    """체지방률 분류 임계값"""
-    LOW = 10.0
-    NORMAL = 20.0
-    OVERWEIGHT = 24.0
-
-
-class MuscleRatioThreshold:
-    """근육량/체중 비율 임계값"""
-    VERY_HIGH = 0.55
-    HIGH = 0.50
-    SUFFICIENT = 0.45
-    NORMAL = 0.40
-
-
-class ValidationLimits:
-    """검증 한계값"""
-    MIN_WEIGHT = 1.0
-    MAX_WEIGHT = 500.0
-    MIN_BMI = 10.0
-    MAX_BMI = 100.0
-    MIN_FAT_RATE = 0.0
-    MAX_FAT_RATE = 100.0
-    MIN_MUSCLE = 0.0
-    DEFAULT_MARGIN = 0.10
-
-
-class BodyPartLevel:
-    """부위별 발달도 분류"""
-    ABOVE = "표준이상"
-    NORMAL = "표준"
-    BELOW = "표준미만"
-
-
-class BodyPartKeys:
-    """부위 키 상수"""
-    LEFT_ARM = "왼팔"
-    RIGHT_ARM = "오른팔"
-    TRUNK = "몸통"
-    LEFT_LEG = "왼다리"
-    RIGHT_LEG = "오른다리"
-
-# ============================================================================
-# 2. 데이터 타입 클래스 (Data Classes)
-# ============================================================================
-
 class BodyCompositionData:
-    """체성분 데이터를 통합 관리하는 클래스"""
+    """
+    [체성분 데이터 객체]
+    사용자 기본 정보(Basic Info)와 측정 데이터(Composition Data)를 캡슐화한 모델 클래스입니다.
+    - 주요 역할: 데이터 유효성 검증, 타입 변환, 데이터 접근 추상화
+    - from_dict() 메서드를 통해 외부 Dictionary 데이터를 안전하게 객체로 매핑(Mapping)합니다.
+    """
     
     def __init__(self):
         self.sex = None
@@ -91,20 +36,6 @@ class BodyCompositionData:
             
         Returns:
             BodyCompositionData: 변환된 객체
-            
-        Example:
-            >>> data_dict = {
-            ...     "sex": "남성",
-            ...     "age": 25,
-            ...     "height_cm": 175,
-            ...     "weight_kg": 70,
-            ...     "bmi": 23.1,
-            ...     "fat_rate": 15.2,
-            ...     "smm": 25.4,
-            ...     "muscle_seg": {...},
-            ...     "fat_seg": {...}
-            ... }
-            >>> data = BodyCompositionData.from_dict(data_dict)
         """
         obj = cls()
         

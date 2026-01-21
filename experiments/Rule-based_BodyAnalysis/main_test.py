@@ -1,6 +1,5 @@
-from integration import BodyCompositionAnalyzer
+from body_analysis.pipeline import BodyCompositionAnalyzer
 import utils_test
-
 
 def get_test_input_from_inbody():
     return {

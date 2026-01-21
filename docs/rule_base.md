@@ -20,9 +20,14 @@
 ### 전체 구조
 ```
 Rule-based_BodyAnalysis/
-├── constants.py          # 상수 및 데이터 클래스 정의
-├── classifiers.py        # 분류 전략 클래스 모음
-├── integration.py        # 통합 분석 파이프라인 (Facade Pattern)
+├── body_analysis/        # 체성분 분석 패키지
+│   ├── __init__.py       # 패키지 초기화
+│   ├── models.py         # 데이터 구조 정의 (BodyCompositionData)
+│   ├── constants.py      # 상수 및 임계값 정의
+│   ├── metrics.py        # 기초 지표(BMI/체지방/근육) 계산
+│   ├── stages.py         # Stage 1~3 체형 분석 로직
+│   ├── segmental.py      # 부위별 분석 및 정규화
+│   └── pipeline.py       # 통합 분석 파이프라인 (Facade)
 ├── main_test.py          # 메인 실행 파일
 └── utils_test.py         # 결과 출력 유틸리티
 ```
@@ -72,7 +77,7 @@ input_data = {
 
 ### 2. BodyCompositionData 객체 형태
 ```python
-from constants import BodyCompositionData
+from body_analysis.models import BodyCompositionData
 
 data = BodyCompositionData()
 data.set_basic_info("남성", 25, 175, 70)
@@ -154,64 +159,33 @@ analysis_result = {
 
 ### 2. 핵심 모듈 설명
 
+#### 📄 `models.py`
+**역할**: 데이터 구조 정의
+- `BodyCompositionData`: 체성분 데이터를 담는 클래스 (JSON/Dict 자동 변환 지원)
+
 #### 📄 `constants.py`
-**역할**: 시스템 전반에 사용되는 상수와 데이터 클래스 정의
+**역할**: 분석 기준값 및 상수 정의
+- `BMIThreshold`, `BodyPartLevel` 등 각종 임계값 관리
 
-**주요 클래스**:
-- `BMIThreshold`: BMI 분류 기준값 (저체중 18.5, 정상 23.0, 과체중 24.9 등)
-- `BodyFatThreshold`: 체지방률 분류 기준값
-- `MuscleRatioThreshold`: 근육량/체중 비율 기준값
-- `ValidationLimits`: 데이터 검증 한계값 및 기본 마진(0.10)
-- `BodyPartLevel`: 부위별 발달도 분류 ("표준이상", "표준", "표준미만")
-- `BodyPartKeys`: 부위 키 상수 ("왼팔", "오른팔", "몸통", "왼다리", "오른다리")
-- **`BodyCompositionData`**: 체성분 데이터 관리 클래스
-  - `from_dict()`: 딕셔너리 → 객체 변환 (핵심 기능!)
-  - `get_total_fat()`: 총 체지방량 계산
+#### 📄 `metrics.py`
+**역할**: 기초 지표 계산 및 단순 분류
+- `BMIClassifier`, `BodyFatClassifier`, `MuscleClassifier`
+- 입력된 단일 수치를 등급(예: 비만, 표준)으로 반환
 
-#### 📄 `classifiers.py`
-**역할**: 각 단계별 분류 전략 클래스 모음
+#### 📄 `stages.py`
+**역할**: 상위 레벨의 체형 분석 비즈니스 로직
+- **Stage 1**: BMI & 체지방률 조합 분석 (`Stage1BodyTypeClassifier`)
+- **Stage 2**: 근육량 기반 체형 보정 (`Stage2MuscleAdjuster`)
+- **Stage 3**: 상하체 밸런스 분석 (`Stage3BalanceAnalyzer`)
 
-**주요 클래스**:
+#### 📄 `segmental.py`
+**역할**: 부위별 상세 분석
+- `MuscleSegmentalAnalyzer`: 팔/다리/몸통 근육 발달도 분석
+- `DataNormalizer`: 숫자 데이터를 표준 등급 텍스트로 정규화
 
-1. **기본 분류기**
-   - `BMIClassifier`: BMI 값을 카테고리로 분류
-   - `BodyFatClassifier`: 체지방률을 카테고리로 분류
-   - `MuscleClassifier`: 근육량/체중 비율로 근육 레벨 분류
-
-2. **Stage 1: 1차 체형 분류**
-   - `Stage1BodyTypeClassifier`: BMI + 체지방률 기반 체형 분류
-   - 분류 결과: "마른형", "표준형", "근육형", "비만형", "고도비만형", "마른비만형"
-
-3. **Stage 2: 근육량 보정**
-   - `Stage2MuscleAdjuster`: 근육 레벨로 Stage1 체형 보정
-   - 보정 테이블을 사용하여 세분화된 체형 출력
-   - 예: "마른형" + "근육 충분" → "마른근육형"
-
-4. **부위별 분석**
-   - `SegmentalAnalyzer`: 부위별 분석 기본 클래스
-   - `MuscleSegmentalAnalyzer`: 부위별 근육 분석
-   - `FatSegmentalAnalyzer`: 부위별 체지방 분석
-   - `DataNormalizer`: 숫자 데이터를 텍스트 분류로 정규화
-
-5. **Stage 3: 상하체 밸런스**
-   - `Stage3BalanceAnalyzer`: 근육/체지방 분포로 상하체 밸런스 분석
-   - 분류 결과: "상체발달형", "하체발달형", "상체비만형", "하체비만형", "표준형"
-
-#### 📄 `integration.py`
-**역할**: 전체 분석 파이프라인 통합 (Facade Pattern)
-
-**주요 클래스**:
-- `BodyCompositionAnalyzer`: 통합 분석 파이프라인
-  - `_get_value()`: 딕셔너리/객체 통합 접근 헬퍼
-  - `_get_total_fat()`: 총 체지방량 계산 헬퍼
-  - **`analyze_full_pipeline()`**: 전체 분석 실행 (메인 메서드)
-
-**분석 프로세스**:
-1. 입력 데이터 자동 변환 (딕셔너리 → 객체)
-2. Stage 1+2 분석 (체형 분류 및 근육 보정)
-3. 부위별 데이터 정규화
-4. Stage 3 분석 (상하체 밸런스)
-5. 결과 딕셔너리 반환
+#### 📄 `pipeline.py`
+**역할**: 전체 분석 흐름 통합 (Facade)
+- `BodyCompositionAnalyzer`: 위 모듈들을 조립하여 `analyze_full_pipeline` 메서드 제공
 
 ---
 
@@ -276,11 +250,33 @@ analysis_result = {
 
 ---
 
+## 🛠️ 개발 작업 내역 (2026-01-21)
+
+### 1. 패키지 구조화 (Refactoring)
+**이전 상태**: 
+- 3개의 개별 파일(`constants`, `classifiers`, `integration`)에 로직이 분산됨
+- 단순 파일 분리로 인한 모듈 간 의존성 혼재
+
+**작업 내용**:
+- ✅ **`body_analysis` 패키지 생성**: 파이썬 표준 패키지 구조 도입
+- ✅ **모듈 세분화 및 역할 정립**:
+  - `models.py`: 데이터 구조체 정의 (`BodyCompositionData`)
+  - `constants.py`: 분석 상수 정의
+  - `metrics.py`: BMI, 체지방 등 기초 지표 계산
+  - `segmental.py`: 부위별 분석 및 정규화
+  - `stages.py`: Stage 1~3 핵심 비즈니스 로직
+  - `pipeline.py`: 통합 실행 Facade 클래스
+- ✅ **코드 정리**: 기존 플랫 파일 삭제 및 패키지 import 구조로 변경
+
+---
+
 ## 🧪 테스트 및 검증
 
 ### 테스트 케이스
 ```python
 # main_test.py 실행
+from body_analysis import BodyCompositionAnalyzer
+
 analyzer = BodyCompositionAnalyzer(margin=0.10)
 result = analyzer.analyze_full_pipeline(user_data)
 ```
@@ -359,12 +355,13 @@ result = analyzer.analyze_full_pipeline(user_data)
 
 ## 📚 관련 문서
 - [BodyAnalysis_Rule.py](../experiments/Rule-based_BodyAnalysis/BodyAnalysis_Rule.py) - 원본 코드
-- [constants.py](../experiments/Rule-based_BodyAnalysis/constants.py) - 상수 정의
-- [classifiers.py](../experiments/Rule-based_BodyAnalysis/classifiers.py) - 분류 로직
-- [integration.py](../experiments/Rule-based_BodyAnalysis/integration.py) - 통합 파이프라인
+- [body_analysis package](../experiments/Rule-based_BodyAnalysis/body_analysis/) - 패키지 폴더
+- [models.py](../experiments/Rule-based_BodyAnalysis/body_analysis/models.py)
+- [pipeline.py](../experiments/Rule-based_BodyAnalysis/body_analysis/pipeline.py)
 
 ---
 
-**Last Updated**: 2026-01-20  
-**Version**: 1.0.0  
+**Last Updated**: 2026-01-21  
+**Last Updated**: 2026-01-21  
+**Version**: 1.1.0  
 **Status**: ✅ Production Ready
