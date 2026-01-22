@@ -81,15 +81,7 @@ class BodyCompositionAnalyzer:
             
             # 4. 최종 결과 반환
             return {
-                "basic_info": {
-                    "sex": data.sex,
-                    "age": data.age,
-                    "height_cm": data.height_cm,
-                    "weight_kg": data.weight_kg
-                },
-                "stage1_2": stage12_result,
-                "muscle_seg": muscle_seg_normalized,
-                "fat_seg": fat_seg_normalized,
+                "stage2": stage2_type,
                 "stage3": stage3_type
             }
             
@@ -97,21 +89,7 @@ class BodyCompositionAnalyzer:
             print(f"[ERROR] 분석 파이프라인 실행 중 오류 발생: {e}")
             traceback.print_exc()
             
-            safe_get = lambda k: raw_input.get(k) if isinstance(raw_input, dict) else getattr(raw_input, k, None)
-            
             return {
-                "basic_info": {
-                    "sex": safe_get("sex") or "N/A",
-                    "age": safe_get("age") or "N/A",
-                    "height_cm": safe_get("height_cm") or "N/A",
-                    "weight_kg": safe_get("weight_kg") or "N/A"
-                },
-                "stage1_2": {
-                    "bmi": "N/A", "bmi_category": "N/A", "fat_category": "N/A",
-                    "smm_ratio": "N/A", "muscle_level": "N/A",
-                    "stage1_type": "N/A", "stage2_type": "N/A"
-                },
-                "muscle_seg": None,
-                "fat_seg": None,
+                "stage2": "알 수 없음",
                 "stage3": "알 수 없음"
             }
